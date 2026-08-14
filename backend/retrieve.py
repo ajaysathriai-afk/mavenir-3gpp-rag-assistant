@@ -1,7 +1,8 @@
 import pickle
 from pathlib import Path
 
-import chromadb
+import psycopg2
+from pgvector.psycopg2 import register_vector
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
@@ -9,12 +10,11 @@ from dotenv import load_dotenv
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-CHROMA_DIR = Path(__file__).parent / "chroma_db"
 BM25_INDEX_PATH = Path(__file__).parent / "bm25_index.pkl"
 
-# Load everything once, at import time, not on every query
-chroma_client = chromadb.PersistentClient(path=str(CHROMA_DIR))
-collection = chroma_client.get_collection("mavenir_3gpp")
+# Connect once, at import time
+conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+register_vector(conn)
 
 with open(BM25_INDEX_PATH, "rb") as f:
     bm25_data = pickle.load(f)
@@ -22,43 +22,42 @@ with open(BM25_INDEX_PATH, "rb") as f:
     bm25_chunks = bm25_data["chunks"]
 
 
+from pgvector.psycopg2 import register_vector
+from pgvector import Vector
+
 def semantic_search(query: str, top_k: int = 20):
-    """Embeds the query, searches ChromaDB, returns top_k chunks."""
     response = client.embeddings.create(model="text-embedding-3-small", input=[query])
-    query_embedding = response.data[0].embedding
+    query_embedding = Vector(response.data[0].embedding)
 
-    results = collection.query(query_embeddings=[query_embedding], n_results=top_k)
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT spec, page, text
+        FROM chunks
+        ORDER BY embedding <=> %s
+        LIMIT %s
+        """,
+        (query_embedding, top_k),
+    )
+    results = cur.fetchall()
+    cur.close()
 
-    # Chroma returns results in a nested-list format; flatten to a simple list
-    return [
-        {"text": doc, "spec": meta["spec"], "page": meta["page"]}
-        for doc, meta in zip(results["documents"][0], results["metadatas"][0])
-    ]
+    return [{"spec": row[0], "page": row[1], "text": row[2]} for row in results]
 
 
 def keyword_search(query: str, top_k: int = 20):
-    """Tokenizes the query, runs BM25, returns top_k chunks."""
     tokenized_query = query.lower().split()
     scores = bm25_index.get_scores(tokenized_query)
-
-    # Get indices of the top_k highest-scoring chunks
     top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
-
     return [bm25_chunks[i] for i in top_indices]
 
 
 def reciprocal_rank_fusion(semantic_results, keyword_results, k: int = 60):
-    """
-    Combines two ranked lists into one, using RRF (Part 10.11's pattern).
-    A chunk that ranks well in BOTH lists scores higher than one that
-    only ranks well in one — this is what makes it genuinely 'hybrid'
-    rather than just picking one method.
-    """
     scores = {}
     chunk_lookup = {}
 
     for rank, chunk in enumerate(semantic_results):
-        key = (chunk["spec"], chunk["page"], chunk["text"][:50])  # dedup key
+        key = (chunk["spec"], chunk["page"], chunk["text"][:50])
         scores[key] = scores.get(key, 0) + 1 / (k + rank + 1)
         chunk_lookup[key] = chunk
 
@@ -72,7 +71,6 @@ def reciprocal_rank_fusion(semantic_results, keyword_results, k: int = 60):
 
 
 def hybrid_retrieve(query: str, top_k: int = 5):
-    """The main function the rest of the app will call."""
     semantic_results = semantic_search(query, top_k=20)
     keyword_results = keyword_search(query, top_k=20)
     fused = reciprocal_rank_fusion(semantic_results, keyword_results)
@@ -80,8 +78,7 @@ def hybrid_retrieve(query: str, top_k: int = 5):
 
 
 if __name__ == "__main__":
-    # First real end-to-end retrieval test!
-    query = "What is network slicing in the 5G system architecture?"
+    query = "What is network slicing in the 5G system?"
     results = hybrid_retrieve(query)
 
     print(f"Query: {query}\n")

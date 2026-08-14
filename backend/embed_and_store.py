@@ -3,28 +3,18 @@ import time
 from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
-import chromadb
+import psycopg2
 
 from ingest import process_all_documents
 
-load_dotenv()  # loads OPENAI_API_KEY from .env
+load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
-CHROMA_DIR = Path(__file__).parent / "chroma_db"
-BATCH_SIZE = 100  # how many chunks we embed per API call
+BATCH_SIZE = 100
 
 
 def embed_batch(texts: list[str]) -> list[list[float]]:
-    """
-    Sends a batch of texts to OpenAI's embeddings API in ONE call,
-    gets back one vector per text. Batching like this is what keeps
-    21,000+ chunks from taking forever or hitting rate limits.
-    """
-    response = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=texts,
-    )
+    response = client.embeddings.create(model="text-embedding-3-small", input=texts)
     return [item.embedding for item in response.data]
 
 
@@ -33,10 +23,11 @@ def build_vector_store():
     chunks = [c for c in chunks if c["text"] and c["text"].strip()]
     print(f"Total usable chunks: {len(chunks)}")
 
-    chroma_client = chromadb.PersistentClient(path=str(CHROMA_DIR))
-    collection = chroma_client.get_or_create_collection(name="mavenir_3gpp")
+    conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+    cur = conn.cursor()
 
-    already_done = collection.count()
+    cur.execute("SELECT COUNT(*) FROM chunks;")
+    already_done = cur.fetchone()[0]
     print(f"Already embedded: {already_done} chunks — resuming from there")
 
     remaining_chunks = chunks[already_done:]
@@ -46,27 +37,36 @@ def build_vector_store():
     for i in range(0, total, BATCH_SIZE):
         batch = remaining_chunks[i:i + BATCH_SIZE]
         texts = [c["text"] for c in batch]
-        global_index = already_done + i  # keeps IDs unique across the whole run
 
         try:
             embeddings = embed_batch(texts)
-            collection.add(
-                ids=[f"{c['spec']}_p{c['page']}_{global_index+j}" for j, c in enumerate(batch)],
-                embeddings=embeddings,
-                documents=texts,
-                metadatas=[{"spec": c["spec"], "page": c["page"]} for c in batch],
-            )
+
+            for chunk, embedding in zip(batch, embeddings):
+                cur.execute(
+                    "INSERT INTO chunks (spec, page, text, embedding) VALUES (%s, %s, %s, %s)",
+                    (chunk["spec"], chunk["page"], chunk["text"], embedding),
+                )
+            conn.commit()
+
             done = min(i + BATCH_SIZE, total)
-            print(f"  {done}/{total} remaining chunks embedded (total in DB: {collection.count()})")
+            cur.execute("SELECT COUNT(*) FROM chunks;")
+            current_total = cur.fetchone()[0]
+            print(f"  {done}/{total} remaining chunks embedded (total in DB: {current_total})")
 
         except Exception as e:
-            print(f"\n!!! ERROR on batch starting at index {global_index}: {e}")
+            print(f"\n!!! ERROR on batch starting at index {already_done + i}: {e}")
             print("Stopping here — just re-run the script, it will resume from this point.\n")
+            conn.rollback()
             break
 
-        time.sleep(0.3)  # small pause between batches to avoid rate-limit issues
+        time.sleep(0.3)
 
-    print(f"\nFinal count in collection: {collection.count()}")
+    cur.execute("SELECT COUNT(*) FROM chunks;")
+    final_count = cur.fetchone()[0]
+    print(f"\nFinal count in table: {final_count}")
+
+    cur.close()
+    conn.close()
 
 
 if __name__ == "__main__":

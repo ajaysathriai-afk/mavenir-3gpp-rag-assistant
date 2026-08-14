@@ -1,7 +1,7 @@
 from pypdf import PdfReader
 from pathlib import Path
 
-RAW_PDF_DIR = Path("data/raw_pdfs")
+RAW_PDF_DIR = Path(__file__).parent.parent / "data" / "raw_pdfs"
 
 def extract_pages(pdf_path: Path):
     """
