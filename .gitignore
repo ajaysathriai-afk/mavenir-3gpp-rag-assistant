@@ -8,5 +8,5 @@ frontend/dist/
 frontend/.env
 .DS_Store
 backend/chroma_db/
-backend/bm25_index.pkl
+
 data/raw_pdfs/
