@@ -2,10 +2,11 @@ venv/
 .env
 __pycache__/
 *.pyc
-data/raw_pdfs/
+
 frontend/node_modules/
 frontend/dist/
 frontend/.env
 .DS_Store
 backend/chroma_db/
 backend/bm25_index.pkl
+data/raw_pdfs/
