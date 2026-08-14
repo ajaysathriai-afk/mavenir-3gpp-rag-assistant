@@ -1,0 +1,171 @@
+[
+  {
+    "question": "What is network slicing in the 5G system architecture?",
+    "answer": "Network slicing in the 5G system architecture is a concept that allows for differentiated treatment of customers based on their specific requirements. It enables Mobile Network Operators (MNO) to categorize customers into different tenant types, each with distinct service requirements governed by Service Level Agreements (SLAs) and subscriptions. This is facilitated by the RAN's awareness of slices, allowing for tailored service delivery [38.300, p.153].\n\nA Network Slice instance encompasses both the Core Network Control Plane and User Plane Network Functions, and may include components from the NG-RAN or other access networks, depending on the deployment scenario [23.501, p.221]. The 5G system must support procedures and configurations for Network Slice instance selection, and different network slices may be optimized for various features and functions, potentially serving different groups of User Equipment (UE) [23.501, p.221]. \n\nTo identify a Network Slice end-to-end, the system uses Single Network Slice Selection Assistance Information (S-NSSAI) [23.003, p.126].",
+    "expected_refusal": false,
+    "actually_refused": false,
+    "refusal_correct": true,
+    "groundedness_score": 8,
+    "unsupported_claims": [
+      "The statement 'This is facilitated by the RAN's awareness of slices, allowing for tailored service delivery' implies a direct causal relationship that is not explicitly stated in the context."
+    ],
+    "context_relevance_score": 9,
+    "answer_relevance_score": 10
+  },
+  {
+    "question": "What is the S-NSSAI and what does it identify?",
+    "answer": "The S-NSSAI (Single Network Slice Selection Assistance Information) is a type of information element that identifies a specific network slice in a 5G network. It is comprised of two components: a Slice/Service Type (SST) and an optional Slice Differentiator (SD). The SST is used to categorize the type of service or slice, while the SD helps differentiate among multiple network slices that may share the same SST. The S-NSSAI can have a minimum length of 3 octets and a maximum length of 10 octets, and its structure is defined in 3GPP TS 23.501 [23.003, p.126] and [24.501, p.868].",
+    "expected_refusal": false,
+    "actually_refused": false,
+    "refusal_correct": true,
+    "groundedness_score": 6,
+    "unsupported_claims": [
+      "The S-NSSAI is a type of information element that identifies a specific network slice in a 5G network.",
+      "The SST is used to categorize the type of service or slice."
+    ],
+    "context_relevance_score": 9,
+    "answer_relevance_score": 10
+  },
+  {
+    "question": "What security procedures are defined for 5G system authentication?",
+    "answer": "The security procedures for 5G system authentication are defined in the document ETSI TS 33.501. Specifically, the 5G Authentication and Key Agreement (AKA) based primary authentication and key agreement procedure is outlined in section 5.4.1.3, which includes the following subsections: \n\n- 5.4.1.3.1 General\n- 5.4.1.3.2 Authentication initiation by the network\n- 5.4.1.3.3 Authentication response by the UE\n- 5.4.1.3.4 Authentication completion by the network [24.501, p.8]. \n\nAdditionally, the document specifies security features and mechanisms for the 5G System and the 5G Core, including security procedures performed within these systems [33.501, p.21].",
+    "expected_refusal": false,
+    "actually_refused": false,
+    "refusal_correct": true,
+    "groundedness_score": 8,
+    "unsupported_claims": [
+      "The answer states 'the document specifies security features and mechanisms for the 5G System and the 5G Core, including security procedures performed within these systems' which is a paraphrase and not a direct quote from the context."
+    ],
+    "context_relevance_score": 8,
+    "answer_relevance_score": 9
+  },
+  {
+    "question": "What is the role of the AMF in the 5G core network?",
+    "answer": "The AMF (Access and Mobility Management Function) in the 5G core network has several roles, including:\n\n1. **Discovery and Association**: The AMF allows the 5G Access Network (5G-AN) to discover the AMF and set up necessary associations. It can advertise the same or distinct AMF Pointer values to the 5G-AN node, facilitating communication and discovery processes [23.501, p.290].\n\n2. **5G-TMSI Allocation**: The AMF is responsible for ensuring that the 10 Least Significant Bits of the 5G-TMSI (Temporary Mobile Subscriber Identity) are evenly distributed to avoid conflicts. This is crucial for maintaining a low probability of the same 5G-TMSI being allocated to different UEs by different AMFs [23.501, p.214].\n\n3. **Security Management**: The AMF plays a role in security management by initiating security mode commands to change the 5G security algorithms for an ongoing NAS (Non-Access Stratum) security context. It re-derives the 5G NAS keys and provides new algorithm identities within the SECURITY MODE COMMAND message [24.501, p.276].\n\n4. **Key Delivery**: During the security setup for non-3GPP access, the AMF delivers a key (K_N3IWF) to the N3IWF (Non-3GPP Interworking Function) as part of establishing IPsec security associations [33.501, p.131].\n\n5. **Identification**: The AMF is identified by a globally unique FQDN (Fully Qualified Domain Name), and it can be configured with one or more GUAMIs (Globally Unique AMF Identifiers) [23.501, p.214].\n\nThese roles highlight the AMF's critical functions in managing access, mobility, security, and identification within the 5G core network.",
+    "expected_refusal": false,
+    "actually_refused": false,
+    "refusal_correct": true,
+    "groundedness_score": 8,
+    "unsupported_claims": [
+      "The AMF allows the 5G Access Network (5G-AN) to discover the AMF and set up necessary associations.",
+      "It can advertise the same or distinct AMF Pointer values to the 5G-AN node, facilitating communication and discovery processes."
+    ],
+    "context_relevance_score": 8,
+    "answer_relevance_score": 10
+  },
+  {
+    "question": "How does the NG-RAN architecture support multi-connectivity?",
+    "answer": "The NG-RAN architecture supports multi-connectivity through various configurations that allow a User Equipment (UE) to connect to multiple radio access nodes simultaneously. Specifically, NG-RAN supports the following types of dual connectivity:\n\n1. **E-UTRA-NR Dual Connectivity (NGEN-DC)**: A UE connects to one ng-eNB acting as a Master Node (MN) and one gNB acting as a Secondary Node (SN) [37.340, p.12].\n\n2. **NR-E-UTRA Dual Connectivity (NE-DC)**: A UE connects to one gNB acting as a MN and one ng-eNB acting as a SN [37.340, p.12].\n\n3. **NR-NR Dual Connectivity (NR-DC)**: A UE connects to one gNB acting as a MN and another gNB acting as a SN. Additionally, NR-DC can be configured such that a single gNB acts as both the MN and SN, managing both the Master Cell Group (MCG) and Secondary Cell Group (SCG) [37.340, p.12].\n\nFurthermore, NG-RAN can establish RAN resources for a PDU Session using dual connectivity, allowing the PDU Session to be established even if the user plane requirements indicated by the RSN cannot be fully satisfied, with decisions made independently for each PDU Session [23.501, p.401]. \n\nThis multi-connectivity capability enhances the overall performance and reliability of the network by enabling simultaneous connections to multiple nodes.",
+    "expected_refusal": false,
+    "actually_refused": false,
+    "refusal_correct": true,
+    "groundedness_score": 8,
+    "unsupported_claims": [
+      "The statement that 'this multi-connectivity capability enhances the overall performance and reliability of the network' is an inference not directly supported by the provided context."
+    ],
+    "context_relevance_score": 9,
+    "answer_relevance_score": 10
+  },
+  {
+    "question": "What is the PDU session establishment procedure?",
+    "answer": "The PDU session establishment procedure may correspond to several scenarios, including:\n\n1. A UE initiated PDU Session Establishment procedure.\n2. A UE initiated PDU Session handover between 3GPP and non-3GPP.\n3. A UE initiated PDU Session handover from EPS to 5GS.\n4. A Network triggered PDU Session Establishment procedure, where the network sends a device trigger message to applications on the UE side. The payload in the Device Trigger Request message contains information on which application is expected to trigger the PDU Session establishment request, leading the application(s) on the UE side to initiate the PDU Session Establishment procedure [23.502, p.107].",
+    "expected_refusal": false,
+    "actually_refused": false,
+    "refusal_correct": true,
+    "groundedness_score": 10,
+    "unsupported_claims": [],
+    "context_relevance_score": 9,
+    "answer_relevance_score": 9
+  },
+  {
+    "question": "What are the physical layer channel coding schemes in TS 38.212?",
+    "answer": "I don't have enough information in the provided documents to answer this accurately.",
+    "expected_refusal": true,
+    "actually_refused": true,
+    "refusal_correct": true,
+    "groundedness_score": 2,
+    "unsupported_claims": [
+      "The statement 'I don't have enough information in the provided documents to answer this accurately' implies a lack of information that is not supported by the context, as the context provides specific details about physical layer models and procedures."
+    ],
+    "context_relevance_score": 3,
+    "answer_relevance_score": 2
+  },
+  {
+    "question": "What is the best recipe for biryani?",
+    "answer": "I don't have enough information in the provided documents to answer this accurately.",
+    "expected_refusal": true,
+    "actually_refused": true,
+    "refusal_correct": true,
+    "groundedness_score": 2,
+    "unsupported_claims": [
+      "The statement 'I don't have enough information in the provided documents to answer this accurately' implies a lack of relevant context, which is not supported by the provided excerpts that contain specific information."
+    ],
+    "context_relevance_score": 0,
+    "answer_relevance_score": 5
+  },
+  {
+    "question": "What are the RRC connection states defined in TS 38.331?",
+    "answer": "I don't have enough information in the provided documents to answer this accurately.",
+    "expected_refusal": true,
+    "actually_refused": true,
+    "refusal_correct": true,
+    "groundedness_score": 2,
+    "unsupported_claims": [
+      "The statement 'I don't have enough information in the provided documents to answer this accurately' implies a lack of relevant information, which is not supported by the context that provides specific details about RRC state transitions and security handling."
+    ],
+    "context_relevance_score": 3,
+    "answer_relevance_score": 2
+  },
+  {
+    "question": "How does 6G network architecture differ from 5G?",
+    "answer": "I don't have enough information in the provided documents to answer this accurately.",
+    "expected_refusal": true,
+    "actually_refused": true,
+    "refusal_correct": true,
+    "groundedness_score": 2,
+    "unsupported_claims": [
+      "The statement 'I don't have enough information in the provided documents to answer this accurately' implies a lack of relevant information, which is not directly supported by the context provided."
+    ],
+    "context_relevance_score": 2,
+    "answer_relevance_score": 2
+  },
+  {
+    "question": "Since S-NSSAI has exactly 6 mandatory components, what are all 6?",
+    "answer": "I don't have enough information in the provided documents to answer this accurately.",
+    "expected_refusal": true,
+    "actually_refused": true,
+    "refusal_correct": true,
+    "groundedness_score": 2,
+    "unsupported_claims": [
+      "The system's answer implies a lack of sufficient information to answer accurately, which is not directly supported by the context provided."
+    ],
+    "context_relevance_score": 2,
+    "answer_relevance_score": 2
+  },
+  {
+    "question": "Given that the AMF handles all user-plane traffic in 5G, explain how it does this.",
+    "answer": "I don't have enough information in the provided documents to answer this accurately.",
+    "expected_refusal": true,
+    "actually_refused": true,
+    "refusal_correct": true,
+    "groundedness_score": 2,
+    "unsupported_claims": [
+      "The system's answer implies a lack of information to provide an accurate response, which is not directly supported by the context provided."
+    ],
+    "context_relevance_score": 5,
+    "answer_relevance_score": 2
+  },
+  {
+    "question": "What is the exact maximum number of PDU sessions per UE as defined in the specs I've given you, and what happens at session 16?",
+    "answer": "I don't have enough information in the provided documents to answer this accurately.",
+    "expected_refusal": true,
+    "actually_refused": true,
+    "refusal_correct": true,
+    "groundedness_score": 2,
+    "unsupported_claims": [
+      "The system's answer implies a lack of information to provide an accurate response, which is not supported by the context that provides detailed information about PDU sessions."
+    ],
+    "context_relevance_score": 5,
+    "answer_relevance_score": 8
+  }
+]
